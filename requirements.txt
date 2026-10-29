@@ -1,0 +1,8 @@
+# Python 3.11; install.R installs the CPU torch wheel before this file.
+torch==2.5.1
+numpy==1.26.4
+pandas==2.2.3
+scipy==1.13.1
+rdkit==2024.9.6
+gensim==4.4.0
+scikit-learn==1.5.2

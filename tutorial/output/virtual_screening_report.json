@@ -1,0 +1,49 @@
+{
+  "n_compounds": 8,
+  "n_parseable": 8,
+  "n_unparseable": 0,
+  "n_targets": 1,
+  "device": "cpu",
+  "finetuned": false,
+  "bundle": "/media/shuaiguo/BatCave/02_drug_discovery/model_release/core/VirtualScreening/assets/bundle_baseline/vecnet_inductive.npz",
+  "seconds_featurize": 0,
+  "seconds_score": 0.11,
+  "fit_report": [],
+  "tier_requested": "0a",
+  "tier_run": "0a",
+  "tier_note": null,
+  "diagnostics": {},
+  "targets": [
+    {
+      "target": "LRRK2",
+      "tier_requested": "0a",
+      "tier_run": "0a",
+      "tier_note": null,
+      "n_actives_found": null,
+      "binding_n": null,
+      "n_scored": 8,
+      "mean_library_score": 0.269,
+      "usable_range": true,
+      "mean_score_gate": 0.1,
+      "fold_disagreement_mean": 0.0251,
+      "fold_disagreement_median": 0.0248,
+      "fold_disagreement_p95": 0.0296
+    }
+  ],
+  "python": "3.11.13 (main, Jul 11 2025, 22:43:55) [Clang 20.1.4 ]",
+  "packages": {
+    "torch": "2.5.1+cpu",
+    "numpy": "1.26.4",
+    "pandas": "2.2.3",
+    "scipy": "1.13.1",
+    "rdkit": "2024.9.6",
+    "gensim": "4.4.0",
+    "scikit-learn": "1.5.2"
+  },
+  "similarity_band": [
+    {
+      "target": "LRRK2",
+      "similarity_band": 1
+    }
+  ]
+}

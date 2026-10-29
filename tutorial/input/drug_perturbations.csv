@@ -1,0 +1,7 @@
+gene,DrugA,DrugB,DrugC,DrugD
+TargetA,-2,-2,2,-2
+TargetB,-1,-1,1,1
+TargetC,2,2,-2,2
+TargetD,1,1,-1,-1
+TargetE,-2,2,2,-2
+TargetF,2,-2,-2,-2

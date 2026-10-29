@@ -1,0 +1,231 @@
+---
+title: "DIMER: installation and CPU workflow"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    self_contained: true
+    mathjax: null
+---
+
+Run network proximity, drug-pair analysis, RevERT, and virtual screening from R.
+All steps run on CPU.
+
+## 1. Install once
+
+Use R 4.5 and RStudio, or R with Pandoc. Linux also needs R build tools
+(`r-base-dev` on Ubuntu). Open this Rmd in RStudio and use `tutorial/`
+as your working directory.
+
+Run once to install the R packages and Python CPU dependencies. This needs
+internet access.
+
+```{r install, eval=FALSE}
+source("../install.R", chdir = TRUE)
+```
+
+After installation, run the remaining chunks or click **Knit**. Knitting skips
+installation and works offline. From `tutorial/`, you can also run:
+
+```{r render-instructions, eval=FALSE}
+rmarkdown::render("DIMER_workflow.Rmd")
+```
+
+## 2. Load the example data
+
+The network and expression data are simulated: four drugs (`DrugA`–`DrugD`),
+30 targets (`TargetA`–`TargetZ`, `TargetAA`–`TargetAD`), and a six-gene disease
+module. The screening step uses real compound structures and an LRRK2 sequence.
+
+```{r setup, message=FALSE}
+knitr::opts_chunk$set(error = FALSE, collapse = TRUE, comment = "#>")
+library(data.table)
+dir.create("output", recursive = TRUE, showWarnings = FALSE)
+
+source("../core/NetworkProximity/load_reference.R")
+source("../core/NetworkProximity/static_proximity.R")
+source("../core/NetworkProximity/set_distance.R")
+source("../core/NetworkProximity/combination.R")
+source("../core/FunctionalDirection/direction_score.R")
+```
+
+```{r inputs}
+ppi = load_ppi("input/ppi_edges.csv")
+module_genes = readLines("input/disease_genes.txt")
+dti = load_dti(
+  "input/drug_targets.csv",
+  drug_col = "drug", name_col = "drug_name",
+  type_col = "drug_type", gene_col = "target_gene"
+)$dti
+blacklist = load_blacklist("input/drug_pair_blacklist.csv")
+knitr::kable(dti[, .(drug, target_gene)])
+```
+
+## 3. Rank drugs by network proximity
+
+A negative `static_z` means targets are closer to the disease module than
+expected from degree-matched random gene sets. We use 100 permutations here;
+increase this for your analysis.
+
+```{r proximity}
+proximity = run_static_proximity(
+  ppi, module_genes, dti, n_perm = 100, seed = 1
+)
+fwrite(proximity, "output/static_proximity.csv")
+knitr::kable(
+  proximity[, .(drug, observed_distance, static_z, static_p)],
+  digits = 3
+)
+```
+
+## 4. Evaluate drug pairs
+
+Calculate target-set separation and network classes. The example blacklist
+excludes `DrugA`–`DrugD`, leaving five pairs. Class P2 means both drugs are
+proximal to the module and their target sets are separated.
+
+```{r combinations}
+combination = run_drug_combination(
+  module_genes, proximity$drug, ppi, dti,
+  blacklist = blacklist, drug_scores = proximity
+)
+fwrite(combination$pairs, "output/drug_pairs.csv")
+fwrite(combination$removed_by_blacklist, "output/blacklisted_pairs.csv")
+knitr::kable(
+  combination$pairs[, .(drug_a, drug_b, network_class, s_ab)], digits = 3
+)
+```
+
+## 5. Evaluate transcriptional reversal with RevERT
+
+Disease signs of +1/−1 indicate increased/decreased expression versus control.
+Drug effects use the same convention for treatment versus control.
+A positive RevERT score indicates reversal of the disease signature.
+
+```{r direction}
+signature = fread("input/disease_signature.csv")
+perturbations = fread("input/drug_perturbations.csv")
+direction = rbindlist(lapply(proximity$drug, function(id) {
+  effect = setNames(perturbations[[id]], perturbations$gene)
+  cbind(
+    data.frame(drug = id),
+    direction_score(signature, effect, drug_term = "sign")
+  )
+}))
+setnames(direction, "score", "revert_score")
+direction$revert_fdr = p.adjust(direction$p, method = "BH")
+fwrite(direction, "output/revert_scores.csv")
+knitr::kable(direction[, .(drug, revert_score, n_overlap, revert_fdr)], digits = 3)
+```
+
+Join reversal and proximity scores:
+
+```{r prioritize}
+prioritization = merge(
+  proximity,
+  direction[, .(drug, revert_score, n_overlap, revert_fdr)],
+  by = "drug"
+)
+setorder(prioritization, static_z)
+fwrite(prioritization, "output/drug_prioritization.csv")
+knitr::kable(
+  prioritization[, .(drug, static_z, revert_score)], digits = 3
+)
+```
+
+## 6. Run virtual screening on CPU from R
+
+Screen eight compounds against LRRK2 using pretrained VecNet weights and
+bundled reference binders. `device = "cpu"` runs without a GPU;
+`finetune = FALSE` uses the pretrained model directly.
+
+```{r screening-setup}
+source("../core/VirtualScreening/R/vecnet_component.R")
+vecnet_init()
+reticulate::import("torch")$set_num_threads(1L)
+
+targets = vecnet_read_fasta("input/targets.fasta")
+compounds = read.csv("input/compounds.csv")
+library_smiles = setNames(compounds$smiles, compounds$compound_id)
+references = vecnet_reference_binders(names(targets))
+```
+
+```{r screen}
+screening = run_virtual_screening(
+  targets = targets,
+  library = library_smiles,
+  device = "cpu",
+  finetune = FALSE,
+  known_binders = references$known_binders,
+  reference_ligand = references$reference_ligand,
+  similarity_band = "auto"
+)
+screening_report = attr(screening, "report")
+ranking = as.data.table(screening)
+setorder(ranking, target, -combined)
+ranking$rank = ave(seq_len(nrow(ranking)), ranking$target, FUN = seq_along)
+setcolorder(ranking, c("rank", "compound_id", "smiles", "target"))
+fwrite(ranking, "output/virtual_screening.csv")
+knitr::kable(
+  ranking[, .(rank, compound_id, target, score, similarity, combined)],
+  digits = 4
+)
+```
+
+Higher `combined` scores rank first. Scores do not estimate binding affinity
+or establish drug efficacy.
+
+```{r checks, include=FALSE}
+stopifnot(
+  nrow(proximity) == 4L,
+  all(is.finite(proximity$static_z)),
+  all(proximity$static_p > 0 & proximity$static_p <= 1),
+  nrow(combination$pairs) == 5L,
+  nrow(combination$removed_by_blacklist) == 1L,
+  direction[drug == "DrugA", revert_score] == 1,
+  direction[drug == "DrugC", revert_score] == -1,
+  nrow(ranking) == 8L,
+  all(is.finite(as.matrix(ranking[, .(score, similarity, combined)])))
+)
+```
+
+```{r runtime-info, include=FALSE}
+writeLines(
+  c("n_perm = 100; seed = 1; drug_term = sign", capture.output(sessionInfo())),
+  "output/R_session_info.txt"
+)
+screening_report$python = reticulate::import("sys")$version
+metadata = reticulate::import("importlib.metadata")
+packages = c("torch", "numpy", "pandas", "scipy", "rdkit", "gensim", "scikit-learn")
+screening_report$packages = as.list(setNames(
+  vapply(packages, function(p) metadata$version(p), character(1)), packages
+))
+screening_report$similarity_band = unique(ranking[, .(target, similarity_band)])
+jsonlite::write_json(
+  screening_report, "output/virtual_screening_report.json",
+  pretty = TRUE, auto_unbox = TRUE, null = "null"
+)
+```
+
+Results and software versions are saved in `output/`.
+Expect four drug results, five drug pairs, and eight screened compounds.
+Rerunning replaces these files.
+
+## 7. Use your own data
+
+Replace the files in `input/` and remove or adapt the `checks` chunk.
+Use matching gene and drug IDs across files.
+
+| Input | Format |
+|---|---|
+| `disease_genes.txt` | One gene ID per line |
+| `ppi_edges.csv` | `gene_a,gene_b`, one undirected interaction per row |
+| `drug_targets.csv` | `drug,drug_name,drug_type,target_gene`; repeat a drug for multiple targets |
+| `drug_pair_blacklist.csv` | `drug_a,drug_b`; IDs must match the drug-target table |
+| `disease_signature.csv` | `gene,sign,weight`; disease-versus-control signs of +1 or −1 |
+| `drug_perturbations.csv` | `gene` followed by one numeric drug-effect column per drug ID |
+| `targets.fasta` | Protein sequences; FASTA header IDs identify targets |
+| `compounds.csv` | `compound_id,smiles` |
+
+For other screening targets, supply matching binders or omit `known_binders`,
+`reference_ligand`, and `similarity_band` and rank by `score`.

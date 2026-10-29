@@ -1,0 +1,6 @@
+drug_a,drug_b,drug_name_a,drug_name_b,network_class,class_rank,overall_rank,s_ab,d_ab,d_aa,d_bb,z_a,z_b,pair_key,n_targets_a,n_targets_b,n_shared_targets,jaccard_targets,p_a,fdr_a,direct_module_targets_a,p_b,fdr_b,direct_module_targets_b,both_close,one_close,targets_separated,mean_drug_z,max_drug_fdr
+DrugA,DrugB,DrugA,DrugB,P2_complementary_exposure,1,1,0.5,1.5,1,1,-1.4305533880725,-2.01144836580557,DrugA__DrugB,2,2,0,0,0.128712871287129,0.257425742574257,2,0.0396039603960396,0.158415841584158,2,TRUE,FALSE,TRUE,-1.72100087693903,0.257425742574257
+DrugB,DrugD,DrugB,DrugD,P4_single_exposure,3,2,5.5,6.5,1,1,-2.01144836580557,3.55862463539493,DrugB__DrugD,2,2,0,0,0.0396039603960396,0.158415841584158,2,0.99009900990099,1,0,FALSE,TRUE,TRUE,0.77358813479468,1
+DrugB,DrugC,DrugB,DrugC,P4_single_exposure,3,3,5.5,6.5,1,1,-2.01144836580557,6.46727698118852,DrugB__DrugC,2,2,0,0,0.0396039603960396,0.158415841584158,2,1,1,0,FALSE,TRUE,TRUE,2.22791430769148,1
+DrugA,DrugC,DrugA,DrugC,P4_single_exposure,3,4,6,7,1,1,-1.4305533880725,6.46727698118852,DrugA__DrugC,2,2,0,0,0.128712871287129,0.257425742574257,2,1,1,0,FALSE,TRUE,TRUE,2.51836179655801,1
+DrugC,DrugD,DrugC,DrugD,P6_independent_action,5,5,2.5,3.5,1,1,6.46727698118852,3.55862463539493,DrugC__DrugD,2,2,0,0,1,1,0,0.99009900990099,1,0,FALSE,FALSE,TRUE,5.01295080829173,1

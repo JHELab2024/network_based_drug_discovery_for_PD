@@ -1,0 +1,7 @@
+gene,sign,weight
+TargetA,1,1
+TargetB,1,1
+TargetC,-1,1
+TargetD,-1,1
+TargetE,1,1
+TargetF,-1,1

@@ -1,0 +1,9 @@
+drug,drug_name,drug_type,target_gene
+DrugA,DrugA,small molecule,TargetA
+DrugA,DrugA,small molecule,TargetB
+DrugB,DrugB,small molecule,TargetE
+DrugB,DrugB,small molecule,TargetF
+DrugC,DrugC,small molecule,TargetO
+DrugC,DrugC,small molecule,TargetP
+DrugD,DrugD,small molecule,TargetW
+DrugD,DrugD,small molecule,TargetX

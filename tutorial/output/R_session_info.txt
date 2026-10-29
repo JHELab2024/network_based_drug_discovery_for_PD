@@ -1,0 +1,45 @@
+n_perm = 100; seed = 1; drug_term = sign
+R version 4.5.1 (2025-06-13)
+Platform: x86_64-pc-linux-gnu
+Running under: Ubuntu 24.04.5 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.12.0 
+LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.12.0  LAPACK version 3.12.0
+
+locale:
+ [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
+ [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+ [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
+[10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+
+time zone: America/New_York
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] igraph_2.1.4      data.table_1.17.8
+
+loaded via a namespace (and not attached):
+ [1] sass_0.4.10             generics_0.1.4          RSQLite_2.4.3          
+ [4] lattice_0.22-5          digest_0.6.37           magrittr_2.0.4         
+ [7] evaluate_1.0.5          grid_4.5.1              fastmap_1.2.0          
+[10] blob_1.2.4              jsonlite_2.0.0          Matrix_1.7-4           
+[13] AnnotationDbi_1.70.0    GenomeInfoDb_1.44.2     DBI_1.2.3              
+[16] limma_3.64.3            BiocManager_1.30.27     httr_1.4.7             
+[19] UCSC.utils_1.4.0        Biostrings_2.76.0       jquerylib_0.1.4        
+[22] cli_3.6.6               rlang_1.3.0             crayon_1.5.3           
+[25] XVector_0.48.0          Biobase_2.68.0          bit64_4.6.0-1          
+[28] cachem_1.1.0            yaml_2.3.10             tools_4.5.1            
+[31] memoise_2.0.1           Rhdf5lib_1.30.0         locfit_1.5-9.12        
+[34] GenomeInfoDbData_1.2.14 BiocGenerics_0.54.0     reticulate_1.43.0      
+[37] vctrs_0.6.5             R6_2.6.1                org.Hs.eg.db_3.21.0    
+[40] png_0.1-8               stats4_4.5.1            lifecycle_1.0.5        
+[43] rhdf5_2.52.1            KEGGREST_1.48.1         S4Vectors_0.48.0       
+[46] edgeR_4.6.3             IRanges_2.42.0          bit_4.6.0              
+[49] pkgconfig_2.0.3         bslib_0.9.0             Rcpp_1.1.0             
+[52] statmod_1.5.1           xfun_0.53               knitr_1.50             
+[55] rhdf5filters_1.20.0     htmltools_0.5.8.1       rmarkdown_2.29         
+[58] compiler_4.5.1         
